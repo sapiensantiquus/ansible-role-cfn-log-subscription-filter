@@ -1,0 +1,23 @@
+- name: Create build directory if not extant
+  file:
+    state: directory
+    dest: "{{ cwl_sub_build_dir }}"
+
+- name: Template the CloudWatch Subscription Filter stack
+  template:
+    src: "{{ cwl_sub_template_src }}"
+    dest: "{{ cwl_sub_build_dir }}/{{ cwl_sub_template_dest }}"
+
+- name: Create or remove cloudformation stack
+  cloudformation:
+    template_parameters:
+      DestinationArn: "{{ cwl_sub_destination_arn }}"
+      FilterPattern: "{{ cwl_sub_filter_pattern }}"
+      LogGroupName: "{{ cwl_sub_log_group_name }}"
+    stack_name: "{{ cwl_sub_stack_name }}"
+    region: "{{ region }}"
+    template: "{{ cwl_sub_build_dir }}/{{ cwl_sub_template_dest }}"
+    security_token: "{{ aws_security_token }}"
+    tags: "{{ cwl_sub_tags }}"
+    state: "{{ cwl_sub_stack_state }}"
+  register: cwl_sub_cf_output

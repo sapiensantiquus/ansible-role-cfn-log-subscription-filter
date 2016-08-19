@@ -1,0 +1,29 @@
+
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "{{ iam_role_description|default('Probably just some role, you know?') }}",
+  "Parameters" : {
+    "DestinationArn" : {
+      "Type" : "String"
+    },
+    "FilterPattern" : {
+      "Type" : "String"
+    },
+    "LogGroupName" : {
+      "Type" : "String"
+    }
+  },
+  "Resources" : {
+    "SubscriptionFilter" : {
+      "Type" : "AWS::Logs::SubscriptionFilter",
+      "Properties" : {
+        "DestinationArn" : { "Ref" : "DestinationArn" },
+        "FilterPattern" : { "Ref" : "FilterPattern" },
+        "LogGroupName" : { "Ref" : "LogGroupName" }
+        {% if cwl_role_arn is defined %}
+        ,"RoleArn" : "{{ cwl_role_arn }}"
+        {% endif %}
+      }
+    }
+  }
+}
