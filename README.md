@@ -1,0 +1,1 @@
+# ansible-role-cfn-log-subscription-filter
