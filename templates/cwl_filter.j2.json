@@ -1,0 +1,41 @@
+
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "{{ iam_role_description|default('Probably just some role, you know?') }}",
+  "Parameters" : {
+    "DestinationArn" : {
+      "Type" : "String"
+    },
+    "FilterPattern" : {
+      "Type" : "String"
+    },
+    "LogGroupName" : {
+      "Type" : "String"
+    }
+  },
+  "Resources" : {
+    {% if cwl_sub_create_lambda_permission is defined %}
+    "LambdaPermission" : {
+      "Type" : "AWS::Lambda::Permission",
+      "Properties" : {
+        "Action" : "lambda:InvokeFunction",
+        "FunctionName" : { "Ref" : "DestinationArn" },
+        "Principal" : { "Fn::Join" : [ "", ["logs.",{ "Ref" : "AWS::Region" },".amazonaws.com" ]] },
+        "SourceAccount" : { "Ref" : "AWS::AccountId"},
+        "SourceArn" : { "Fn::Join" : ["",[ "arn:aws:logs:",{ "Ref" : "AWS::Region"},":",{ "Ref" : "AWS::AccountId" },":log-group:",{ "Ref" : "LogGroupName"},":*"]] }
+      }
+    },
+    {% endif %}
+    "SubscriptionFilter" : {
+      "Type" : "AWS::Logs::SubscriptionFilter",
+      "Properties" : {
+        "DestinationArn" : { "Ref" : "DestinationArn" },
+        "FilterPattern" : { "Ref" : "FilterPattern" },
+        "LogGroupName" : { "Ref" : "LogGroupName" }
+        {% if cwl_role_arn is defined %}
+        ,"RoleArn" : "{{ cwl_role_arn }}"
+        {% endif %}
+      }
+    }
+  }
+}
